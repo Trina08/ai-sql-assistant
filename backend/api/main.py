@@ -45,13 +45,19 @@ def get_customers():
 # ✅ Route 3: Fetch all orders
 @app.get("/orders")
 def get_orders():
-    sql = """
-    SELECT o.id, c.name AS customer, o.total_amount, o.order_date
-    FROM orders o
-    JOIN customers c ON o.customer_id = c.id
-    ORDER BY o.order_date DESC
-    """
-    return {"orders": SQLExecutor().execute(sql)}
+    @app.get("/orders")
+    def get_orders():
+        sql = """
+        SELECT 
+            o.id, 
+            c.name AS customer, 
+            o.total_amount, 
+            o.order_date
+        FROM orders o
+        JOIN customers c ON o.customer_id = c.id
+        ORDER BY o.order_date DESC
+        """
+        return {"orders": SQLExecutor().execute(sql)}
 
 
 # ✅ Route 4: Ask AI (Gemini-powered SQL generator)
