@@ -1,0 +1,22 @@
+# === Core Frameworks ===
+fastapi
+uvicorn[standard]
+sqlalchemy
+psycopg2-binary
+requests
+pandas
+
+# === AI / Gemini ===
+google-generativeai
+
+# === Frontend / Visualization ===
+streamlit
+plotly
+
+# === Utils ===
+python-dotenv
+numpy
+
+# === Optional (for better runtime) ===
+jinja2
+watchdog
