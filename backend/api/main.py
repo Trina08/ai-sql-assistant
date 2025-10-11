@@ -1,7 +1,8 @@
 from fastapi import FastAPI, Request
-from fastapi.middleware.cors import CORSMiddleware
 from chat_system import ask_ai
 from sql_executor import SQLExecutor
+from fastapi.middleware.cors import CORSMiddleware
+
 
 # Initialize FastAPI app
 app = FastAPI(

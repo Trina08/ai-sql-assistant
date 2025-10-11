@@ -3,7 +3,8 @@
 import os
 from dotenv import load_dotenv
 import google.generativeai as genai
-from backend.api.sql_executor import SQLExecutor
+from sql_executor import SQLExecutor
+
 
 # Load environment variables
 load_dotenv()
