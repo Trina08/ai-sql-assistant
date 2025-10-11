@@ -19,10 +19,11 @@ st.markdown("### Manage your business with data-driven insights powered by Gemin
 
 # 🧭 Sidebar Navigation
 st.sidebar.title("Navigation")
-section = st.sidebar.radio("Go to:", ["🏠 Dashboard", "📦 Products", "🧍 Customers", "🧾 Orders", "💬 Ask AI"])
+section = st.sidebar.radio(
+    "Go to:",
+    ["🏠 Dashboard", "📦 Products", "🧍 Customers", "🧾 Orders", "💬 Ask AI"]
+)
 
-
-# ✅ Helper to Fetch Data
 # ✅ Helper to Fetch Data
 def fetch_data(endpoint):
     try:
@@ -41,8 +42,7 @@ def fetch_data(endpoint):
         return []
 
 
-
-# 🏠 Dashboard
+# 🏠 Dashboard Section
 if section == "🏠 Dashboard":
     st.header("📊 Business Overview")
 
@@ -59,11 +59,34 @@ if section == "🏠 Dashboard":
 
         df_orders = pd.DataFrame(orders)
         if not df_orders.empty:
-            fig = px.bar(df_orders, x="customer", y="total_amount", color="customer",
-                         title="💰 Orders by Customer", text_auto=True)
-            st.plotly_chart(fig, use_container_width=True)
+            # ✅ Dynamically detect columns to avoid Plotly errors
+            possible_x = None
+            for col in ["customer", "customer_name", "name"]:
+                if col in df_orders.columns:
+                    possible_x = col
+                    break
+
+            possible_y = None
+            for col in ["total_amount", "amount", "price"]:
+                if col in df_orders.columns:
+                    possible_y = col
+                    break
+
+            if possible_x and possible_y:
+                fig = px.bar(
+                    df_orders,
+                    x=possible_x,
+                    y=possible_y,
+                    color=possible_x,
+                    title="💰 Orders by Customer",
+                    text_auto=True
+                )
+                st.plotly_chart(fig, use_container_width=True)
+            else:
+                st.info("⚠️ Could not generate chart — missing expected columns in 'orders'.")
     else:
         st.info("Loading data... or please ensure backend is active.")
+
 
 # 📦 Products Section
 elif section == "📦 Products":
@@ -72,10 +95,16 @@ elif section == "📦 Products":
     if products:
         df = pd.DataFrame(products)
         st.dataframe(df, use_container_width=True)
-        fig = px.pie(df, names="category", title="📈 Product Categories Distribution")
-        st.plotly_chart(fig, use_container_width=True)
+
+        # ✅ Handle category presence safely
+        if "category" in df.columns:
+            fig = px.pie(df, names="category", title="📈 Product Categories Distribution")
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("⚠️ 'category' column not found, skipping pie chart.")
     else:
         st.warning("No products found.")
+
 
 # 🧍 Customers Section
 elif section == "🧍 Customers":
@@ -86,6 +115,7 @@ elif section == "🧍 Customers":
     else:
         st.warning("No customers found.")
 
+
 # 🧾 Orders Section
 elif section == "🧾 Orders":
     st.header("📦 Orders Summary")
@@ -93,17 +123,33 @@ elif section == "🧾 Orders":
     if orders:
         df = pd.DataFrame(orders)
         st.dataframe(df, use_container_width=True)
-        fig = px.line(df, x="order_date", y="total_amount", markers=True, title="📊 Order Trends Over Time")
-        st.plotly_chart(fig, use_container_width=True)
+
+        # ✅ Safely draw trend chart
+        if "order_date" in df.columns and "total_amount" in df.columns:
+            fig = px.line(
+                df,
+                x="order_date",
+                y="total_amount",
+                markers=True,
+                title="📊 Order Trends Over Time"
+            )
+            st.plotly_chart(fig, use_container_width=True)
+        else:
+            st.info("⚠️ Missing 'order_date' or 'total_amount' for trend chart.")
     else:
         st.warning("No orders data found.")
+
 
 # 💬 Ask AI Section
 elif section == "💬 Ask AI":
     st.header("💬 Ask Business AI Assistant")
     st.markdown("Type your business question below. The AI will generate SQL, run it, and show real results 👇")
 
-    user_question = st.text_input("💭 Enter your question:", placeholder="E.g. Show me top 5 most expensive products")
+    user_question = st.text_input(
+        "💭 Enter your question:",
+        placeholder="E.g. Show me top 5 most expensive products"
+    )
+
     if st.button("Ask AI"):
         if not user_question:
             st.warning("Please enter a question first.")
@@ -116,6 +162,8 @@ elif section == "💬 Ask AI":
                         st.success(f"✅ Query generated: `{data.get('query', 'N/A')}`")
 
                         result = data.get("result", [])
+                        if isinstance(result, dict):
+                            result = [result]
                         if isinstance(result, list) and len(result) > 0:
                             st.dataframe(pd.DataFrame(result), use_container_width=True)
                         else:
@@ -124,6 +172,7 @@ elif section == "💬 Ask AI":
                         st.error(f"Error: {res.text}")
                 except Exception as e:
                     st.error(f"Connection error: {e}")
+
 
 # 🦶 Footer
 st.markdown("---")
