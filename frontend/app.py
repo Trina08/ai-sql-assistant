@@ -23,17 +23,23 @@ section = st.sidebar.radio("Go to:", ["🏠 Dashboard", "📦 Products", "🧍 C
 
 
 # ✅ Helper to Fetch Data
+# ✅ Helper to Fetch Data
 def fetch_data(endpoint):
     try:
         res = requests.get(f"{BACKEND_URL}/{endpoint}")
         if res.status_code == 200:
-            return res.json().get(endpoint, [])
+            data = res.json().get(endpoint, [])
+            # ✅ Fix: Always ensure data is a list for Pandas
+            if isinstance(data, dict):
+                data = [data]
+            return data
         else:
             st.error(f"Error fetching {endpoint}: {res.text}")
             return []
     except Exception as e:
         st.error(f"Error connecting to backend: {e}")
         return []
+
 
 
 # 🏠 Dashboard
